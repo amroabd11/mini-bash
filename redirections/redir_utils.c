@@ -6,7 +6,7 @@
 /*   By: motelti <motelti@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 20:45:10 by motelti           #+#    #+#             */
-/*   Updated: 2025/06/21 21:54:21 by motelti          ###   ########.fr       */
+/*   Updated: 2025/06/21 22:16:33 by motelti          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ void	heredoc_sigint_handler(int sig)
 	(void)sig;
 	g_received_signal = 1;
 	write(STDOUT_FILENO, "\n", 1);
+	close_leaked_fds();
 	rl_replace_line("", 0);
 	rl_on_new_line();
 	exit(130);
@@ -98,7 +99,7 @@ char	*collect_heredoc_input(const char *delimiter)
 		buf = append_line(buf, &buf_size, line);
 		free(line);
 		if (!buf)
-			return (sigaction(SIGINT, &sa_old, NULL), NULL);
+			return (sigaction(SIGINT, &sa_old, NULL), close_leaked_fds(), NULL);
 		line = read_heredoc_line(delimiter);
 	}
 	sigaction(SIGINT, &sa_old, NULL);

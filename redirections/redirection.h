@@ -6,7 +6,7 @@
 /*   By: motelti <motelti@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 17:46:03 by motelti           #+#    #+#             */
-/*   Updated: 2025/06/21 21:55:35 by motelti          ###   ########.fr       */
+/*   Updated: 2025/06/21 22:13:07 by motelti          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,5 +20,7 @@ void	preprocess_heredocs(t_shell *shell, t_command *cmds);
 void	setup_redirections(t_redir *redirs);
 
 t_bool	check_ambiguous_redirect(t_shell *mini);
+
+void	close_leaked_fds(void);
 
 #endif

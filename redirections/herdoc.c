@@ -6,11 +6,23 @@
 /*   By: motelti <motelti@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 12:28:23 by aamraouy          #+#    #+#             */
-/*   Updated: 2025/06/21 21:55:10 by motelti          ###   ########.fr       */
+/*   Updated: 2025/06/21 22:36:15 by motelti          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "redirection.h"
+
+void	close_leaked_fds(void)
+{
+	int	fd;
+	
+	fd = 3;
+	while (fd < 10)
+	{
+		close(fd);
+		fd++;
+	}
+}
 
 t_bool	check_ambiguous_redirect(t_shell *mini)
 {
@@ -45,6 +57,7 @@ void	fork_suces(char *input, int pipe_fd[2], t_redir *redir, t_shell *shell)
 {
 	char	*expanded_input;
 
+	close(pipe_fd[0]);
 	input = collect_heredoc_input(redir->file);
 	if (!input)
 	{
@@ -66,16 +79,39 @@ void	fork_suces(char *input, int pipe_fd[2], t_redir *redir, t_shell *shell)
 	else
 		ft_putstr_fd(input, pipe_fd[1]);
 	free(input);
+	close(pipe_fd[0]);
 	close(pipe_fd[1]);
 	exit(0);
+}
+
+void	cleanup_all_heredocs(t_command *cmds)
+{
+	t_command	*cmd;
+	t_redir		*redir;
+
+	cmd = cmds;
+	while (cmd)
+	{
+		redir = cmd->redirs;
+		while (redir)
+		{
+			if (redir->flag == HEREDOC && redir->heredoc_fd != -1)
+			{
+				close(redir->heredoc_fd);
+				redir->heredoc_fd = -1;
+			}
+			redir = redir->next;
+		}
+		cmd = cmd->next;
+	}
 }
 
 void	fork_fails(pid_t pid, int pipe_fd[2], t_redir *redir, t_shell *shell)
 {
 	int	status;
 
-	waitpid(pid, &status, 0);
 	close(pipe_fd[1]);
+	waitpid(pid, &status, 0);
 	if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
 	{
 		shell->exit_status = 130;
@@ -105,6 +141,8 @@ void	herdoc_chck(t_shell *shell, int pipe_fd[2], t_redir *redir, char *input)
 			else if (pid > 0)
 			{
 				fork_fails(pid, pipe_fd, redir, shell);
+				if (redir->heredoc_fd == -1)
+					close(pipe_fd[0]);
 				if (shell->exit_status == 130)
 					return ;
 			}
@@ -133,6 +171,12 @@ void	preprocess_heredocs(t_shell *shell, t_command *cmds)
 	{
 		redir = cmd->redirs;
 		herdoc_chck(shell, pipe_fd, redir, input);
+		if (shell->exit_status == 130)
+		{
+			cleanup_all_heredocs(cmds);
+			close_leaked_fds();
+			return ;
+		}
 		cmd = cmd->next;
 	}
 }
