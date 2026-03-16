@@ -4,6 +4,9 @@ mini-bash is a simple Unix shell designed as a learning and educational project.
 
 ![Alt text](mini-bash.png)
 
+## Contributors:
+###  [AMRO](https://github.com/amroabd11) &&  [Triangle](https://github.com/triangle-motelti)
+
 ## Features
 
 - **Command Execution:** mini-bash can execute built-in commands as well as external binaries available on the system.
