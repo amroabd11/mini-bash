@@ -4,8 +4,12 @@ mini-bash is a simple Unix shell designed as a learning and educational project.
 
 ![Alt text](mini-bash.png)
 
+<div align="center">
+
 ## Contributors:
 ###  [AMRO](https://github.com/amroabd11) &&  [Triangle](https://github.com/triangle-motelti)
+
+</div>
 
 ## Features
 
